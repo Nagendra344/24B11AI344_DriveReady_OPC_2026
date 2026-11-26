@@ -34,11 +34,6 @@ from groq import Groq, RateLimitError, APIConnectionError
 from langchain_groq import ChatGroq
 from langchain_core.messages import SystemMessage, HumanMessage
 
-
-# ---------------------------------------------------------------------------
-# 1. API configuration and LLM initialization
-# ---------------------------------------------------------------------------
-
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 if not GROQ_API_KEY:
     raise EnvironmentError(
@@ -50,18 +45,11 @@ PROMPT_GUARD_MODEL = "meta-llama/llama-prompt-guard-2-22m"
 
 client = Groq(api_key=GROQ_API_KEY)
 
-# LangChain integration, matching the original Day-2 exercise.
 llm = ChatGroq(
     groq_api_key=GROQ_API_KEY,
     model=MODEL_NAME,
     temperature=0,
 )
-
-
-# ---------------------------------------------------------------------------
-# 2. Travel assistant system prompt and basic question-answer function
-# ---------------------------------------------------------------------------
-
 PACKAGES = {
     "goa weekend": 8500,
     "ooty getaway": 7200,
@@ -90,11 +78,6 @@ def ask_travel_question(question: str) -> str:
     ])
     return str(result.content)
 
-
-# ---------------------------------------------------------------------------
-# 3. Prompt Guard demonstration
-# ---------------------------------------------------------------------------
-
 def check_prompt_guard(text: str) -> str:
     """
     Send user-provided text to Groq's Prompt Guard model.
@@ -107,11 +90,6 @@ def check_prompt_guard(text: str) -> str:
         temperature=0,
     )
     return completion.choices[0].message.content or ""
-
-
-# ---------------------------------------------------------------------------
-# 4. Logging decorator and travel package price tool
-# ---------------------------------------------------------------------------
 
 def log_call(func):
     """Print the function name, arguments, and returned value."""
@@ -135,11 +113,6 @@ def get_package_total(package_name: str, travellers: int = 1) -> int:
         raise ValueError("Number of travellers must be at least 1.")
     return PACKAGES[key] * travellers
 
-
-# ---------------------------------------------------------------------------
-# 5. Conversation memory with a limited context window
-# ---------------------------------------------------------------------------
-
 MAX_TURNS = 8
 conversation_history = [
     {"role": "system", "content": SYSTEM_PROMPT}
@@ -149,7 +122,6 @@ def chat(user_text: str) -> str:
     """Chat with the assistant while retaining only the latest conversation turns."""
     conversation_history.append({"role": "user", "content": user_text})
 
-    # Keep the system prompt and the latest MAX_TURNS messages.
     recent_messages = (
         [conversation_history[0]]
         + conversation_history[1:][-MAX_TURNS:]
@@ -171,11 +143,6 @@ def chat(user_text: str) -> str:
 
     conversation_history.append({"role": "assistant", "content": reply})
     return reply
-
-
-# ---------------------------------------------------------------------------
-# 6. Customer message classification
-# ---------------------------------------------------------------------------
 
 def classify_message(message: str) -> str:
     """Classify a customer message as booking, question, or complaint."""
@@ -202,11 +169,6 @@ def classify_message(message: str) -> str:
         temperature=0,
     )
     return (response.choices[0].message.content or "").strip().lower()
-
-
-# ---------------------------------------------------------------------------
-# 7. Extract booking details as structured JSON
-# ---------------------------------------------------------------------------
 
 def extract_booking_details(message: str) -> dict[str, Any] | None:
     """
@@ -239,11 +201,6 @@ Do not guess missing information.
     except json.JSONDecodeError:
         print("The model returned invalid JSON. Please try again.")
         return None
-
-
-# ---------------------------------------------------------------------------
-# 8. Example demonstrations
-# ---------------------------------------------------------------------------
 
 def run_examples() -> None:
     print("\n=== TravelMate: Basic Assistant ===")
